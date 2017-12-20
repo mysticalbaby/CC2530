@@ -11,7 +11,7 @@ LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
 TRAINING_STEPS = 300000
 MOVING_AVERAGE_DECAY = 0.99
-MODEL_SAVE_PATH = "Identification_model/"
+MODEL_SAVE_PATH = "../../Identification_model/"
 MODEL_NAME= "Identification_model"
 
 def train(CC2530):
