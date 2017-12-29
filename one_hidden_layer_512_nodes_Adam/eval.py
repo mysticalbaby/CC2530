@@ -49,35 +49,71 @@ def evaluate(CC2530):
         
        
         with tf.Session(config=config,) as sess:
-            saver.restore(sess, "../../Identification_model/Identification_model")            
+            saver.restore(sess, "../../Identification_model/OneLayer_FCNet_model/Identification_model")            
 #            train_accuracy_score = sess.run(accuracy, feed_dict=train_feed)
 #            print("training accuracy = %g" % (train_accuracy_score))
 #            validation_accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
 #            print("validation accuracy = %g" % (validation_accuracy_score))
 #            test_accuracy_score = sess.run(accuracy, feed_dict=test_feed)
 #            print("test accuracy = %g" % (test_accuracy_score))
-            
-           
-            for snr in range(0,31,5):
-                # extract classes @ SNR
-                test_feed = {x: np.reshape(CC2530.test.images[CC2530.test.SNR == snr],[-1,inference.INPUT_NODE]),
-                                           y_: CC2530.test.labels[CC2530.test.SNR == snr]}
+
                 
                 # estimate classes
-                test_labels, test_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=test_feed)
+#            test_labels, test_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=test_feed)
+#        
+#            # Plot confusion matrix
+#            conf = np.zeros([len(classes),len(classes)])
+#            confnorm = np.zeros([len(classes),len(classes)])
+#            for i in range(0,test_feed[x].shape[0]):
+#                j = list(test_feed[y_][i,:]).index(1)#the true label
+#                k = test_labels[i] # the predicted label
+#                conf[j,k] =conf[j,k] + 1
+#            for i in range(0,len(classes)):
+#                confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
+#            plot_confusion_matrix(confnorm, labels=classes, title="Onelayer_FCNet Confusion Matrix,test accuracy = %g"%(test_accuracy_score))    
+            
+           
+#            for snr in range(0,31,5):
+#                # extract classes @ SNR
+#                test_feed = {x: np.reshape(CC2530.test.images[CC2530.test.SNR == snr],[-1,inference.INPUT_NODE]),
+#                                           y_: CC2530.test.labels[CC2530.test.SNR == snr]}
+#                
+#                # estimate classes
+#                test_labels, test_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=test_feed)
+#            
+#                # Plot confusion matrix
+#                conf = np.zeros([len(classes),len(classes)])
+#                confnorm = np.zeros([len(classes),len(classes)])
+#                for i in range(0,test_feed[x].shape[0]):
+#                    j = list(test_feed[y_][i,:]).index(1)#the true label
+#                    k = test_labels[i] # the predicted label
+#                    conf[j,k] =conf[j,k] + 1
+#                for i in range(0,len(classes)):
+#                    confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
+#                plot_confusion_matrix(confnorm, labels=classes, title="Onelayer_FCNet Confusion Matrix (SNR=%d),test accuracy = %g"%(snr,test_accuracy_score))    
+#                savename = '../../'+'Onelayer_FCNet Test Confusion Matrix'+ str(snr) + 'dB.jpg'
+#                plt.savefig(savename)  
+
+            for snr in range(0,31,5):
+                # extract classes @ SNR
+                validation_feed = {x: np.reshape(CC2530.validation.images[CC2530.validation.SNR == snr],[-1,inference.INPUT_NODE]),
+                                           y_: CC2530.validation.labels[CC2530.validation.SNR == snr]}
+                
+                # estimate classes
+                validation_labels, validation_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=validation_feed)
             
                 # Plot confusion matrix
                 conf = np.zeros([len(classes),len(classes)])
                 confnorm = np.zeros([len(classes),len(classes)])
-                for i in range(0,test_feed[x].shape[0]):
-                    j = list(test_feed[y_][i,:]).index(1)#the true label
-                    k = test_labels[i] # the predicted label
+                for i in range(0,validation_feed[x].shape[0]):
+                    j = list(validation_feed[y_][i,:]).index(1)#the true label
+                    k = validation_labels[i] # the predicted label
                     conf[j,k] =conf[j,k] + 1
                 for i in range(0,len(classes)):
                     confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
-                plot_confusion_matrix(confnorm, labels=classes, title="Onelayer_FCNet Confusion Matrix (SNR=%d),test accuracy = %g"%(snr,test_accuracy_score))    
-                savename = '../../'+'Onelayer_FCNet Confusion Matrix'+ str(snr) + 'dB.jpg'
-                plt.savefig(savename)              
+                plot_confusion_matrix(confnorm, labels=classes, title="OneLayer_FCNet Confusion Matrix (SNR=%d),validation accuracy = %g"%(snr,validation_accuracy_score))    
+                savename = '../../'+'OneLayer_FCNet Validation Confusion Matrix'+ str(snr) + 'dB.jpg'
+                plt.savefig(savename)                
 
 def main(argv=None):
     CC2530 = read_data_sets()

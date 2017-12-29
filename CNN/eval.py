@@ -92,32 +92,51 @@ def evaluate(CC2530):
 #            print("test accuracy = %g" % (test_accuracy_score))
             
             # Plot confusion matrix
-            for snr in range(0,31,5):
-                # extract classes @ SNR
-                test_feed = {x: np.reshape(CC2530.test.images[CC2530.test.SNR == snr],[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
-                                           y_: CC2530.test.labels[CC2530.test.SNR == snr]}
-                
-                # estimate classes
-                test_labels, test_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=test_feed)
-            
-                # Plot confusion matrix
-                conf = np.zeros([len(classes),len(classes)])
-                confnorm = np.zeros([len(classes),len(classes)])
-                for i in range(0,test_feed[x].shape[0]):
-                    j = list(test_feed[y_][i,:]).index(1)#the true label
-                    k = test_labels[i] # the predicted label
-                    conf[j,k] =conf[j,k] + 1
-                for i in range(0,len(classes)):
-                    confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
-                plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR=%d),test accuracy = %g"%(snr,test_accuracy_score))    
-                savename = '../../'+'ConvNet Confusion Matrix'+ str(snr) + 'dB.jpg'
-                plt.savefig(savename)                        
+#            for snr in range(0,31,5):
+#                # extract classes @ SNR
+#                test_feed = {x: np.reshape(CC2530.test.images[CC2530.test.SNR == snr],[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
+#                                           y_: CC2530.test.labels[CC2530.test.SNR == snr]}
+#                
+#                # estimate classes
+#                test_labels, test_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=test_feed)
+#            
+#                # Plot confusion matrix
+#                conf = np.zeros([len(classes),len(classes)])
+#                confnorm = np.zeros([len(classes),len(classes)])
+#                for i in range(0,test_feed[x].shape[0]):
+#                    j = list(test_feed[y_][i,:]).index(1)#the true label
+#                    k = test_labels[i] # the predicted label
+#                    conf[j,k] =conf[j,k] + 1
+#                for i in range(0,len(classes)):
+#                    confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
+#                plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR=%d),test accuracy = %g"%(snr,test_accuracy_score))    
+#                savename = '../../'+'ConvNet Confusion Matrix'+ str(snr) + 'dB.jpg'
+#                plt.savefig(savename)                        
 #                cor = np.sum(np.diag(conf))
 #                ncor = np.sum(conf) - cor
 #                print "Overall Accuracy: ", cor / (cor+ncor)
 #                acc[snr] = 1.0*cor/(cor+ncor)
 
-
+            for snr in range(0,31,5):
+                # extract classes @ SNR
+                validation_feed = {x: np.reshape(CC2530.validation.images[CC2530.validation.SNR == snr],[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
+                                           y_: CC2530.validation.labels[CC2530.validation.SNR == snr]}
+                
+                # estimate classes
+                validation_labels, validation_accuracy_score = sess.run([predited_labels,accuracy], feed_dict=validation_feed)
+            
+                # Plot confusion matrix
+                conf = np.zeros([len(classes),len(classes)])
+                confnorm = np.zeros([len(classes),len(classes)])
+                for i in range(0,validation_feed[x].shape[0]):
+                    j = list(validation_feed[y_][i,:]).index(1)#the true label
+                    k = validation_labels[i] # the predicted label
+                    conf[j,k] =conf[j,k] + 1
+                for i in range(0,len(classes)):
+                    confnorm[i,:] = conf[i,:] / np.sum(conf[i,:])
+                plot_confusion_matrix(confnorm, labels=classes, title="ConvNet Confusion Matrix (SNR=%d),validation accuracy = %g"%(snr,validation_accuracy_score))    
+                savename = '../../'+'ConvNet Validation Confusion Matrix'+ str(snr) + 'dB.jpg'
+                plt.savefig(savename)
            
         
     
