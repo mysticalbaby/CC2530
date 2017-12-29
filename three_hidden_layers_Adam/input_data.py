@@ -107,7 +107,7 @@ def read_data_sets(dtype=dtypes.float32,
     test_data = load('../../预处理/前导提取/Syn_Header_Datasets/test_data.mat')
     
     validation_data = load('../../预处理/前导提取/Syn_Header_Datasets/validation_data.mat')
-    test_phased_data = load('../../预处理/前导提取/Syn_Header_Datasets/30db_test_phased_data.mat')
+    test_phased_data = load('../../预处理/前导提取/Syn_Header_Datasets/test_phased_data.mat')
     
     train_x_data = train_data['train_x_data']
     train_y_labels = train_data['train_y_labels']

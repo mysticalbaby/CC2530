@@ -4,26 +4,33 @@ import tensorflow as tf
 from input_data import read_data_sets
 import inference
 import os
+import numpy as np
+
 
 BATCH_SIZE = 100
 LEARNING_RATE_BASE = 1e-3
 LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
-TRAINING_STEPS = 300000
+TRAINING_STEPS = 30000
 MOVING_AVERAGE_DECAY = 0.99
 MODEL_SAVE_PATH = "../../Identification_model/"
 MODEL_NAME= "Identification_model"
 
 def train(CC2530):
-    x = tf.placeholder(tf.float32, [None, inference.INPUT_NODE,], name='x-input')
-    y_ = tf.placeholder(tf.float32, [None, inference.OUTPUT_NODE,], name='y-input')
-    train_feed = {x: CC2530.train.images, y_: CC2530.train.labels}    
-    validate_feed = {x: CC2530.validation.images, y_: CC2530.validation.labels}    
-    test_feed = {x: CC2530.test.images, y_: CC2530.test.labels}
-    phased_test_feed = {x: CC2530.phased_test.images, y_: CC2530.phased_test.labels}
+    x = tf.placeholder(tf.float32, [None, inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS], name='x-input')
+    y_ = tf.placeholder(tf.float32, [None, inference.NUM_LABELS], name='y-input')
+    
+    
+    train_feed = {x: np.reshape(CC2530.train.images,[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
+                 y_: CC2530.train.labels}    
+    validate_feed = {x: np.reshape(CC2530.validation.images,[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
+                 y_: CC2530.validation.labels}    
+    test_feed = {x: np.reshape(CC2530.test.images,[-1,inference.INPUT_LENGTH, inference.INPUT_WIDE, inference.NUM_CHANNELS]),
+                 y_: CC2530.test.labels}
+
     
     regularizer = tf.contrib.layers.l2_regularizer(REGULARIZATION_RATE)
-    y = inference.inference(x, regularizer)
+    y = inference.inference(x, False, regularizer)
     global_step = tf.Variable(0, trainable=False)
     
 
@@ -53,18 +60,21 @@ def train(CC2530):
         
         for i in range(TRAINING_STEPS):
             xs, ys = CC2530.train.next_batch(BATCH_SIZE)
-            _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x:xs, y_:ys})
+            reshaped_xs = np.reshape(xs, (
+                BATCH_SIZE,
+                inference.INPUT_LENGTH, 
+                inference.INPUT_WIDE, 
+                inference.NUM_CHANNELS))
+            _, accuracy_value, loss_value, step = sess.run([train_op, accuracy,loss, global_step], feed_dict={x:reshaped_xs, y_:ys})
             if i%1000 == 0:
-                print("After %d training step(s), loss on training batach is %g." % (step, loss_value))               
-                saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)
-                train_accuracy_score = sess.run(accuracy, feed_dict=train_feed)
-                print("After %d training step(s), training accuracy = %g" % (step, train_accuracy_score))
-                validation_accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
-                print("After %d training step(s), validation accuracy = %g" % (step, validation_accuracy_score))
-                test_accuracy_score = sess.run(accuracy, feed_dict=test_feed)
-                print("After %d training step(s), test accuracy = %g" % (step, test_accuracy_score))
-                phased_test_accuracy_score = sess.run(accuracy, feed_dict=phased_test_feed)
-                print("After %d training step(s), phased_test accuracy = %g" % (step, phased_test_accuracy_score))
+                print("After %d training step(s), loss on training batach is %g,trainning accuracy on this batch is %g." % (step, loss_value, accuracy_value)) 
+#                train_accuracy_score = sess.run(accuracy, feed_dict=train_feed)
+#                print("After %d training step(s), training accuracy = %g" % (step, train_accuracy_score))
+#                validation_accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
+#                print("After %d training step(s), validation accuracy = %g" % (step, validation_accuracy_score))
+#                test_accuracy_score = sess.run(accuracy, feed_dict=test_feed)
+#                print("After %d training step(s), test accuracy = %g" % (step, test_accuracy_score))
+        saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME))
 
 
 def main():

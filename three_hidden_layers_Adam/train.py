@@ -9,7 +9,7 @@ BATCH_SIZE = 100
 LEARNING_RATE_BASE = 1e-3
 LEARNING_RATE_DECAY = 0.99
 REGULARIZATION_RATE = 0.0001
-TRAINING_STEPS = 300000
+TRAINING_STEPS = 50000
 MOVING_AVERAGE_DECAY = 0.99
 MODEL_SAVE_PATH = "../../Identification_model/"
 MODEL_NAME= "Identification_model"
@@ -23,7 +23,7 @@ def train(CC2530):
     phased_test_feed = {x: CC2530.phased_test.images, y_: CC2530.phased_test.labels}
     
     regularizer = tf.contrib.layers.l2_regularizer(REGULARIZATION_RATE)
-    y = inference.inference(x, regularizer)
+    y = inference.inference(x, True,regularizer)
     global_step = tf.Variable(0, trainable=False)
     
 
@@ -55,8 +55,7 @@ def train(CC2530):
             xs, ys = CC2530.train.next_batch(BATCH_SIZE)
             _, loss_value, step = sess.run([train_op, loss, global_step], feed_dict={x:xs, y_:ys})
             if i%1000 == 0:
-                print("After %d training step(s), loss on training batach is %g." % (step, loss_value))               
-                saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)
+                print("After %d training step(s), loss on training batach is %g." % (step, loss_value))                              
                 train_accuracy_score = sess.run(accuracy, feed_dict=train_feed)
                 print("After %d training step(s), training accuracy = %g" % (step, train_accuracy_score))
                 validation_accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
@@ -65,6 +64,8 @@ def train(CC2530):
                 print("After %d training step(s), test accuracy = %g" % (step, test_accuracy_score))
                 phased_test_accuracy_score = sess.run(accuracy, feed_dict=phased_test_feed)
                 print("After %d training step(s), phased_test accuracy = %g" % (step, phased_test_accuracy_score))
+#        saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME), global_step=global_step)
+        saver.save(sess, os.path.join(MODEL_SAVE_PATH, MODEL_NAME))
 
 
 def main():

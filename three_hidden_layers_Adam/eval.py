@@ -13,11 +13,10 @@ def evaluate(CC2530):
     with tf.Graph().as_default() as g:
         x = tf.placeholder(tf.float32, [None, inference.INPUT_NODE], name='x-input')
         y_ = tf.placeholder(tf.float32, [None, inference.OUTPUT_NODE], name='y-input')
-        validate_feed = {x: CC2530.validation.images, y_: CC2530.validation.labels}
-        phased_test_feed = {x:CC2530.phased_test.images, y_: CC2530.phased_test.labels}
-#        validate_feed = {x: CC2530.test.images, y_: CC2530.test.labels}
-    
-        y = inference.inference(x, None)
+        train_feed = {x: CC2530.train.images, y_: CC2530.train.labels}    
+        validate_feed = {x: CC2530.validation.images, y_: CC2530.validation.labels}    
+        test_feed = {x: CC2530.phased_test.images, y_: CC2530.phased_test.labels}
+        y = inference.inference(x, False, None)
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -26,7 +25,7 @@ def evaluate(CC2530):
         saver = tf.train.Saver(variables_to_restore)
         
         config = tf.ConfigProto()
-        config.gpu_options.per_process_gpu_memory_fraction = 0.4
+        config.gpu_options.per_process_gpu_memory_fraction = 1
         
 
 #        while True:
@@ -45,10 +44,14 @@ def evaluate(CC2530):
 
         
         with tf.Session(config=config,) as sess:
-            saver.restore(sess, "../../Identification_model/Identification_model-159001")
-            accuracy_score = sess.run(accuracy, feed_dict=phased_test_feed)
-            print("phased_test accuracy = %g" % (accuracy_score))
-    
+            saver.restore(sess, "../../Identification_model/Identification_model")            
+            train_accuracy_score = sess.run(accuracy, feed_dict=train_feed)
+            print("training accuracy = %g" % (train_accuracy_score))
+            validation_accuracy_score = sess.run(accuracy, feed_dict=validate_feed)
+            print("validation accuracy = %g" % (validation_accuracy_score))
+            test_accuracy_score = sess.run(accuracy, feed_dict=test_feed)
+            print("test accuracy = %g" % (test_accuracy_score))
+
 def main(argv=None):
     CC2530 = read_data_sets()
     evaluate(CC2530)
